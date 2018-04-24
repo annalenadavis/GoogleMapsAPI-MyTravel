@@ -1,0 +1,21 @@
+locations_callback(
+{
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Location",
+        "properties": {
+          "city": "State College",
+          "country": "United States"
+        },
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            -77.86457061767578,
+            40.793278730537196
+          ]
+        }
+      }
+    ]
+  }
+  )
