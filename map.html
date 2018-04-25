@@ -15,46 +15,84 @@
   </head>
   <body>
     <div id="map"></div>
+
     <script type='text/javascript' src='config.js'></script>
+
     <script>
       const mykey = config.MY_KEY;
       const secretkey = config.SECRET_KEY; 
+
       var map;
       var pushpin = "yellowpin.png";
       
+      
       function initMap() {
+
+        //new map
         map = new google.maps.Map(document.getElementById('map'), {
           zoom: 2,
           center: new google.maps.LatLng(27.77, 50.95),
           mapTypeId: 'hybrid'
         });
 
-        const script = document.createElement('script');
-        script.src = 'locations.json';
-        document.getElementsByTagName('head')[0].appendChild(script);
-      }
-
-      // Loop through the results array and place a marker for each
-      // set of coordinates.
-      window.locations_callback = function(results) {
-        for (var i = 0; i < results.features.length; i++) {
-          var coords = results.features[i].geometry.coordinates;
-          var latLng = new google.maps.LatLng(coords[1],coords[0]);
-          var content = results.features[i].properties.city + ", " + results.features[i].properties.country;
-          var marker = new google.maps.Marker({
-            position: latLng,
-            map: map,
-            icon: pushpin
-          });
-          var infoWindow = new google.maps.InfoWindow({
-            content: content
-            });
-
-          marker.addListener('click', function(){
-            infoWindow.open(map, marker);
-          });
+        // Array of markers
+        let markers = [
+        {
+          coords: {lat:41.870583462266836, lng:-87.6324462890625},
+          city: "Chicago",
+          country: "United States"
+        },
+        {
+          coords: {lat:38.89530825492018, lng:-77.02651977539062},
+          city: "Washington",
+          country: "United States"
+        },        
+        {
+          coords: {lat:32.802281861547314, lng:-117.24746704101561},
+          city: "San Diego",
+          country: "United States"
+        },        
+        {
+          coords: {lat:37.788624026050876, lng:-122.40966796874999},
+          city: "San Francisco",
+          country: "United States"
+        },
+        {
+          coords: {lat:25.762174960200042, lng:-80.28121948242188},
+          city: "Miami",
+          country: "United States"
         }
+      ]
+
+      //add markers
+      for(var i= 0; i<markers.length; i++){
+        addMarker(markers[i]);
       }
+
+      function addMarker(locations){
+        var marker = new google.maps.Marker({
+          position: locations.coords,
+          map: map,
+          icon: pushpin
+        });
+
+        //Add Info Windows
+        var content = locations.city + ", " + locations.country;
+        var infoWindow = new google.maps.InfoWindow({
+              content: content,
+              position: marker
+              });
+
+        //Window opens on marker click       
+        marker.addListener('click', function(){
+              infoWindow
+              infoWindow.open(map, marker);
+            });
+      }
+
+
+      }
+
 
     </script>
     <script async defer src="https://maps.googleapis.com/maps/api/js?&callback=initMap&key=" + mykey></script>
