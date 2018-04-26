@@ -78,17 +78,21 @@
 
         //Add Info Windows
         var content = locations.city + ", " + locations.country;
-        var infoWindow = new google.maps.InfoWindow({
-              content: content,
-              position: marker
-              });
+        var infoWindow = null;
 
-        //Window opens on marker click       
+       // Window opens on marker click       
         marker.addListener('click', function(){
-              infoWindow
-              infoWindow.open(map, marker);
+          if(infoWindow){
+            infoWindow.close();
+          }
+            infoWindow = new google.maps.InfoWindow({
+              content: content,
+              position: locations.coords
+              });
             });
       }
+
+      return addMarker(markers);
 
 
       }
