@@ -69,6 +69,9 @@
         addMarker(markers[i]);
       }
 
+
+      var activeWindow;
+
       function addMarker(locations){
         var marker = new google.maps.Marker({
           position: locations.coords,
@@ -78,24 +81,20 @@
 
         //Add Info Windows
         var content = locations.city + ", " + locations.country;
-        var infoWindow = null;
-
-       // Window opens on marker click       
-        marker.addListener('click', function(){
-          if(infoWindow){
-            infoWindow.close();
-          }
-            infoWindow = new google.maps.InfoWindow({
+        var infoWindow = new google.maps.InfoWindow({
               content: content,
-              position: locations.coords
+              position: location.coords
               });
+      
+        //Window opens on marker click       
+        marker.addListener('click', function(){
+          if(activeWindow && (activeWindow !== null)) activeWindow.close();
+              infoWindow.open(map, marker);
+              activeWindow = infoWindow;
             });
-      }
+        } //end addMarker function
 
-      return addMarker(markers);
-
-
-      }
+      } //end initMap function
 
 
     </script>
