@@ -11,10 +11,81 @@
         margin: 0;
         padding: 0;
       }
+      #description {
+        font-family: Roboto;
+        font-size: 15px;
+        font-weight: 300;
+      }
+
+      #infowindow-content .title {
+        font-weight: bold;
+      }
+
+      #infowindow-content {
+        display: none;
+      }
+
+      #map #infowindow-content {
+        display: inline;
+      }
+
+      .pac-card {
+        margin: 10px 10px 0 0;
+        border-radius: 2px 0 0 2px;
+        box-sizing: border-box;
+        -moz-box-sizing: border-box;
+        outline: none;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+        background-color: #fff;
+        font-family: Roboto;
+      }
+
+      #pac-container {
+        padding-bottom: 12px;
+        margin-right: 12px;
+      }
+
+      .pac-controls {
+        display: inline-block;
+        padding: 5px 11px;
+      }
+
+      .pac-controls label {
+        font-family: Roboto;
+        font-size: 13px;
+        font-weight: 300;
+      }
+
+      #pac-input {
+        background-color: #fff;
+        font-family: Roboto;
+        font-size: 15px;
+        font-weight: 300;
+        margin-left: 12px;
+        padding: 0 11px 0 13px;
+        text-overflow: ellipsis;
+        width: 400px;
+      }
+
+      #pac-input:focus {
+        border-color: #4d90fe;
+      }
+
+      #title {
+        color: #fff;
+        background-color: #4d90fe;
+        font-size: 25px;
+        font-weight: 500;
+        padding: 6px 12px;
+      }
+      #target {
+        width: 345px;
+      }
     </style>
   </head>
   <body>
     <div id="map"></div>
+    <input id="pac-input" class="controls" type="text" placeholder="Search Box">
 
     <script type='text/javascript' src='config.js'></script>
 
@@ -24,7 +95,6 @@
 
       var map;
       var pushpin = "yellowpin.png";
-      
       
       function initMap() {
 
@@ -64,14 +134,15 @@
         }
       ]
 
-      //add markers
+      //loop through and add markers from array
       for(var i= 0; i<markers.length; i++){
         addMarker(markers[i]);
       }
 
-
+      //declare variable outside function to enable previous infoWindow closing when new one is added
       var activeWindow;
 
+      //function to add markers from array
       function addMarker(locations){
         var marker = new google.maps.Marker({
           position: locations.coords,
@@ -94,10 +165,62 @@
             });
         } //end addMarker function
 
+        // Create the search box and link it to the UI element.
+        var input = document.getElementById('pac-input');
+        var searchBox = new google.maps.places.SearchBox(input);
+        map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
+
+        // Bias the SearchBox results towards current map's viewport.
+        map.addListener('bounds_changed', function() {
+          searchBox.setBounds(map.getBounds());
+        });
+
+        var clientMarkers = [];
+
+        //add markers on map click
+        google.maps.event.addListener(map, 'click', function(event) {
+            placeMarker(event.latLng);
+        });
+
+        function placeMarker(location) {
+          clientMarkers.push(new google.maps.Marker({
+            position: location, 
+            map: map,
+            icon: pushpin,
+            // content: place.name
+          }));
+          console.log(clientMarkers);
+        } //end placeMarker function
+
+        // Listen for the event fired when the user selects a prediction and retrieve
+        // more details for that place.
+        searchBox.addListener('places_changed', function() {
+          var places = searchBox.getPlaces();
+          if (places.length == 0) {
+            return;
+          }
+
+          // For each place, get the icon, name and location.
+          var bounds = new google.maps.LatLngBounds();
+          places.forEach(function(place) {
+            if (!place.geometry) {
+              console.log("Returned place contains no geometry");
+              return;
+            }
+            if (place.geometry.viewport) {
+              // Only geocodes have viewport.
+              bounds.union(place.geometry.viewport);
+            } else {
+              bounds.extend(place.geometry.location);
+            }
+          });
+          map.fitBounds(bounds);
+        }); //end searchbox listener
+
       } //end initMap function
 
 
     </script>
-    <script async defer src="https://maps.googleapis.com/maps/api/js?&callback=initMap&key=" + mykey></script>
+    <script async defer src="https://maps.googleapis.com/maps/api/js?&callback=initMap&libraries=places&libraries=geometry&key=" + mykey></script>
   </body>
 </html>
