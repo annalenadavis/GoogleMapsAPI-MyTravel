@@ -83,99 +83,65 @@
       }
     </style>
   </head>
+
   <body>
     <div id="map"></div>
     <input id="pac-input" class="controls" type="text" placeholder="Search Box">
-
     <script type='text/javascript' src='config.js'></script>
-
     <script>
       const mykey = config.MY_KEY;
       const secretkey = config.SECRET_KEY; 
-
-      var map;
-      var pushpin = "yellowpin.png";
+      let map;
+      const pushpin = "yellowpin.png";
       
       function initMap() {
+        let activeWindow;
+        const clientMarkers = [];        
+        
+      //new map
+      map = new google.maps.Map(document.getElementById('map'), {
+        zoom: 2,
+        center: new google.maps.LatLng(27.77, 50.95),
+        mapTypeId: 'hybrid'
+      });
 
-        //new map
-        map = new google.maps.Map(document.getElementById('map'), {
-          zoom: 2,
-          center: new google.maps.LatLng(27.77, 50.95),
-          mapTypeId: 'hybrid'
-        });
+      // //loop through and add markers from original markers array
+      // for(let i= 0; i<markers.length; i++){
+      //   addMarker(markers[i]);
+      // }
 
-        // Array of markers
-        let markers = [
-        {
-          coords: {lat:41.870583462266836, lng:-87.6324462890625},
-          city: "Chicago",
-          country: "United States"
-        },
-        {
-          coords: {lat:38.89530825492018, lng:-77.02651977539062},
-          city: "Washington",
-          country: "United States"
-        },        
-        {
-          coords: {lat:32.802281861547314, lng:-117.24746704101561},
-          city: "San Diego",
-          country: "United States"
-        },        
-        {
-          coords: {lat:37.788624026050876, lng:-122.40966796874999},
-          city: "San Francisco",
-          country: "United States"
-        },
-        {
-          coords: {lat:25.762174960200042, lng:-80.28121948242188},
-          city: "Miami",
-          country: "United States"
-        }
-      ]
-
-      //loop through and add markers from array
-      for(var i= 0; i<markers.length; i++){
-        addMarker(markers[i]);
-      }
-
-      //declare variable outside function to enable previous infoWindow closing when new one is added
-      var activeWindow;
-
-      //function to add markers from array
+      //function to add markers from original markers array
       function addMarker(locations){
-        var marker = new google.maps.Marker({
-          position: locations.coords,
-          map: map,
-          icon: pushpin
-        });
+          const marker = new google.maps.Marker({
+            position: locations.coords,
+            map: map,
+            icon: pushpin
+          });
 
-        //Add Info Windows
-        var content = locations.city + ", " + locations.country;
-        var infoWindow = new google.maps.InfoWindow({
-              content: content,
-              position: location.coords
+          //Add Info Windows
+          const content = locations.city + ", " + locations.country;
+          const infoWindow = new google.maps.InfoWindow({
+                content: content,
+                position: location.coords
+                });
+        
+          //Window opens on marker click       
+          marker.addListener('click', function(){
+            if(activeWindow && (activeWindow !== null)) activeWindow.close();
+                infoWindow.open(map, marker);
+                activeWindow = infoWindow;
               });
-      
-        //Window opens on marker click       
-        marker.addListener('click', function(){
-          if(activeWindow && (activeWindow !== null)) activeWindow.close();
-              infoWindow.open(map, marker);
-              activeWindow = infoWindow;
-            });
         } //end addMarker function
 
         // Create the search box and link it to the UI element.
-        var input = document.getElementById('pac-input');
-        var searchBox = new google.maps.places.SearchBox(input);
+        const input = document.getElementById('pac-input');
+        const searchBox = new google.maps.places.SearchBox(input);
         map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
 
         // Bias the SearchBox results towards current map's viewport.
         map.addListener('bounds_changed', function() {
           searchBox.setBounds(map.getBounds());
         });
-
-        var clientMarkers = [];
 
         //add markers on map click
         google.maps.event.addListener(map, 'click', function(event) {
@@ -187,21 +153,22 @@
             position: location, 
             map: map,
             icon: pushpin,
-            // content: place.name
+            // content: place.name 
           }));
+          clientMarkers.push(clientMarkers);
           console.log(clientMarkers);
         } //end placeMarker function
 
         // Listen for the event fired when the user selects a prediction and retrieve
         // more details for that place.
         searchBox.addListener('places_changed', function() {
-          var places = searchBox.getPlaces();
+          const places = searchBox.getPlaces();
           if (places.length == 0) {
             return;
           }
 
           // For each place, get the icon, name and location.
-          var bounds = new google.maps.LatLngBounds();
+          const bounds = new google.maps.LatLngBounds();
           places.forEach(function(place) {
             if (!place.geometry) {
               console.log("Returned place contains no geometry");
@@ -221,6 +188,6 @@
 
 
     </script>
-    <script async defer src="https://maps.googleapis.com/maps/api/js?&callback=initMap&libraries=places&libraries=geometry&key=" + mykey></script>
+    <script async defer src="https://maps.googleapis.com/maps/api/js?&callback=initMap&libraries=places&key=" + mykey></script>
   </body>
 </html>
