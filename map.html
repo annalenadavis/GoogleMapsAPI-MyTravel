@@ -23,6 +23,8 @@
 
     <script type='text/javascript' src='config.js'></script>
     <script>
+
+      const test = [];
       const mykey = config.MY_KEY;
       const secretkey = config.SECRET_KEY; 
       let map;
@@ -88,6 +90,8 @@
                 position: place.geometry.location
               }));
               markers.push(marker);
+              test.push(marker);
+console.log(markers);
 
               // Add Info Windows
               const content = marker.title;
@@ -114,7 +118,7 @@
 
           //ADD PLACES TO LOCAL STORAGE
           const addPlaces = document.querySelector('.add-places');
-          const placeList = document.querySelector('place-list');
+          const placeList = document.querySelector('.place-list');
           const newPlaces = [];
 
           function addPlace(e) {
@@ -123,27 +127,27 @@
             newPlaces.push(newPlace);
             console.dir(newPlaces);
             
-            // populateList(newPlaces, placeList);
+            populateList(newPlaces, placeList);
+            localStorage.setItem('newPlaces', JSON.stringify(newPlaces));
             this.reset(); //clears last search from input
           }
 
-          // function populateList(array = [], arrayList) {
-          //   arrayList.innerHTML = array.map((marker, i) => {
-          //     return `
-          //       <li>
-          //         <label for="">"hello"</label>
-          //       </li>
-          //     `;  
-          //   }).join('');
-          // }
+          function populateList(array = [], arrayList) {
+            arrayList.innerHTML = array.map((marker, i) => {
+              return `
+                <li>
+                  <label for="">"hello"</label>
+                </li>
+              `;  
+            }).join('');
+          }
 
           //Listen for submit event on form
           addPlaces.addEventListener('submit', addPlace);
 
-
       } //end initMap function
 
-
+      
 
     </script>
     <script async defer src="https://maps.googleapis.com/maps/api/js?&callback=initMap&libraries=places&key=" + mykey></script>
