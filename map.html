@@ -2,6 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8">
+    <!--TODO: style map and list -->
     <link rel="stylesheet" href="style.css">
   </head>
 
@@ -10,14 +11,16 @@
 
     <!-- LIST WITH SEARCH BOX -->
     <div class="wrapper">
-      <h2>MY TRAVEL SPOTS</h2>
+      <h2>MY AWESOME LIST OF PLACES</h2>
       <p></p>
       <ul class="place-list">
-        <li>Where have you been?</li>
+        <li></li>
       </ul>
       <form class="add-places">
         <input id="pac-input" type="text" name="place" placeholder="Place Name" required>
         <input type="submit" value="+ Add Place">
+        <!-- TODO: Add button to remove all markers/list and JS to do it -->
+        <button type="button" placeholder="Remove all places"></button>
       </form>
     </div>
 
@@ -27,7 +30,8 @@
       const secretkey = config.SECRET_KEY; 
       let map;
       const pushpin = "redcircle.png";
-      
+      const localMarkers = JSON.parse(localStorage.getItem('localMarkers')) || [];
+
       function initMap() {
 
 // SET MAP
@@ -45,7 +49,6 @@
           // Create the search box and link it to the UI element.
           const input = document.getElementById('pac-input');
           const searchBox = new google.maps.places.SearchBox(input);
-          // map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
 
           // Bias the SearchBox results towards current map's viewport.
           map.addListener('bounds_changed', function() {
@@ -54,9 +57,8 @@
 
 //ADD MARKERS & INFOWINDOWS VIA SEARCHBOX
           const markers = [];
-          let marker;
           let activeWindow;
-          const addPlaces = document.querySelector('.add-places');
+          const addPlacesForm = document.querySelector('.add-places');
           const placeList = document.querySelector('.place-list');
 
           // In the Search Box: listen for the event fired when the user selects a prediction
@@ -67,12 +69,20 @@
               return;
             }
 
-            // For each place, get the icon, name and location.
+//FOR EACH PLACE: Find place, set markers, set map boundaries, add to list & storage
             const bounds = new google.maps.LatLngBounds();
             places.forEach(function(place) {
               if (!place.geometry) {
                 console.log("Returned place contains no geometry");
                 return;
+              }
+
+              //Determine the boundaries of the map based on location entered 
+              if (place.geometry.viewport) {
+                // Only geocodes have viewport.
+                bounds.union(place.geometry.viewport);
+              } else {
+                bounds.extend(place.geometry.location);
               }
 
               //Icon properties
@@ -92,53 +102,55 @@
                 position: place.geometry.location
               }));
               markers.push(marker);
-              console.log(markers);
+              localMarkers.push(marker.title);
 
-              //ADD PLACES TO LOCAL STORAGE & LIST IN BROWSER WINDOW
-              populateList(markers, placeList)
-          //  localStorage.setItem('markers', JSON.stringify(marker.title));
+              //Add places to list in browser window & to local storage
+              populateList(localMarkers, placeList);
+              localStorage.setItem('localMarkers', JSON.stringify(localMarkers));
 
-              function populateList(array = [], arrayList) {
-              arrayList.innerHTML = array.map((marker, i) => {
-              return `
-                  <li>
-                    <label for="">${marker.title}</label>
-                  </li>
-                `;  
-                }).join('');
-              }
 
               // Add Info Windows
               const content = marker.title;
               const infoWindow = new google.maps.InfoWindow();
             
-              //INfoWindow opens on marker click       
+              //InfoWindow opens on marker click       
               marker.addListener('click', function(){
                 if(activeWindow && (activeWindow !== null)) activeWindow.close();
                     infoWindow.setContent(content);
                     infoWindow.open(map, marker);
                     activeWindow = infoWindow;
-                  }); //end InfoWindow function
+              }); //end InfoWindow function
 
-              if (place.geometry.viewport) {
-                // Only geocodes have viewport.
-                bounds.union(place.geometry.viewport);
-              } else {
-                bounds.extend(place.geometry.location);
-              }
             });//end places function
 
-            map.fitBounds(bounds);
+            map.fitBounds(bounds); //adjust map boundaries after adding marker
           }); //end searchbox listener        
 
-
           function addPlace(e) {
-            e.preventDefault();
+            e.preventDefault(); //Stop page from reloading after entering place
             this.reset(); //clears last search from input
-          }
+          } 
 
-          //Listen for submit event on form
-          addPlaces.addEventListener('submit', addPlace);
+          //Update the List in the browser
+          function populateList(array = [], arrayList) {
+            arrayList.innerHTML = array.map((marker, i) => {
+              return `
+                  <li>
+                    <label for="">${localMarkers[i]}</label>
+                  </li>
+                `;  
+            }).join('');
+          } 
+
+          addPlacesForm.addEventListener('submit', addPlace); //Listen for submit event on form
+          populateList(localMarkers, placeList); //update the list in broswer on page load
+          
+          //save data to local storage to reload markers
+          map.data.toGeoJson(function (json) {
+            localStorage.setItem('geoData', JSON.stringify(json));
+          });
+          //TODO: Render map with geoData saved to localstorage when page reloads.
+          //geoData doesn't appear to be in a format I can use to add markers again
 
       } //end initMap function
 
