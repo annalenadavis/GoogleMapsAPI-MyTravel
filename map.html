@@ -23,8 +23,6 @@
 
     <script type='text/javascript' src='config.js'></script>
     <script>
-
-      const test = [];
       const mykey = config.MY_KEY;
       const secretkey = config.SECRET_KEY; 
       let map;
@@ -56,7 +54,10 @@
 
 //ADD MARKERS & INFOWINDOWS VIA SEARCHBOX
           const markers = [];
+          let marker;
           let activeWindow;
+          const addPlaces = document.querySelector('.add-places');
+          const placeList = document.querySelector('.place-list');
 
           // In the Search Box: listen for the event fired when the user selects a prediction
           // and retrieve more details for that place.
@@ -74,6 +75,7 @@
                 return;
               }
 
+              //Icon properties
               const icon = {
                 url: pushpin,
                 size: new google.maps.Size(71, 71),
@@ -83,27 +85,40 @@
               };
 
               // Create a marker for each place.
-              const marker = (new google.maps.Marker({
+              marker = (new google.maps.Marker({
                 map: map,
                 icon: icon,
                 title: place.name,
                 position: place.geometry.location
               }));
               markers.push(marker);
-              test.push(marker);
-console.log(markers);
+              console.log(markers);
+
+              //ADD PLACES TO LOCAL STORAGE & LIST IN BROWSER WINDOW
+              populateList(markers, placeList)
+          //  localStorage.setItem('markers', JSON.stringify(marker.title));
+
+              function populateList(array = [], arrayList) {
+              arrayList.innerHTML = array.map((marker, i) => {
+              return `
+                  <li>
+                    <label for="">${marker.title}</label>
+                  </li>
+                `;  
+                }).join('');
+              }
 
               // Add Info Windows
               const content = marker.title;
               const infoWindow = new google.maps.InfoWindow();
             
-              //Window opens on marker click       
+              //INfoWindow opens on marker click       
               marker.addListener('click', function(){
                 if(activeWindow && (activeWindow !== null)) activeWindow.close();
                     infoWindow.setContent(content);
                     infoWindow.open(map, marker);
                     activeWindow = infoWindow;
-                  });
+                  }); //end InfoWindow function
 
               if (place.geometry.viewport) {
                 // Only geocodes have viewport.
@@ -112,34 +127,14 @@ console.log(markers);
                 bounds.extend(place.geometry.location);
               }
             });//end places function
+
             map.fitBounds(bounds);
           }); //end searchbox listener        
 
 
-          //ADD PLACES TO LOCAL STORAGE
-          const addPlaces = document.querySelector('.add-places');
-          const placeList = document.querySelector('.place-list');
-          const newPlaces = [];
-
           function addPlace(e) {
-            e.preventDefault(); //adds first item in query to array when hitting enter
-            const newPlace = (this.querySelector('[name=place]')).value;
-            newPlaces.push(newPlace);
-            console.dir(newPlaces);
-            
-            populateList(newPlaces, placeList);
-            localStorage.setItem('newPlaces', JSON.stringify(newPlaces));
+            e.preventDefault();
             this.reset(); //clears last search from input
-          }
-
-          function populateList(array = [], arrayList) {
-            arrayList.innerHTML = array.map((marker, i) => {
-              return `
-                <li>
-                  <label for="">"hello"</label>
-                </li>
-              `;  
-            }).join('');
           }
 
           //Listen for submit event on form
