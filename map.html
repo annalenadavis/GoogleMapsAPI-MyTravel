@@ -11,7 +11,7 @@
 
     <!-- LIST WITH SEARCH BOX -->
     <div class="wrapper">
-      <h2>MY AWESOME LIST OF PLACES</h2>
+      <h2>MY LIST</h2>
       <p></p>
       <ul class="place-list">
         <li></li>
@@ -20,7 +20,7 @@
         <input id="pac-input" type="text" name="place" placeholder="Place Name" required>
         <input type="submit" value="+ Add Place">
         <!-- TODO: Add button to remove all markers/list and JS to do it -->
-        <button type="button" placeholder="Remove all places"></button>
+        <!-- <button type="button" placeholder="Remove all places"></button> -->
       </form>
     </div>
 
@@ -108,7 +108,6 @@
               populateList(localMarkers, placeList);
               localStorage.setItem('localMarkers', JSON.stringify(localMarkers));
 
-
               // Add Info Windows
               const content = marker.title;
               const infoWindow = new google.maps.InfoWindow();
@@ -151,6 +150,7 @@
           });
           //TODO: Render map with geoData saved to localstorage when page reloads.
           //geoData doesn't appear to be in a format I can use to add markers again
+          //can't just use markers because it is a circular structure...
 
       } //end initMap function
 
