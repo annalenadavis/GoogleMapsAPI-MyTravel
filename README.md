@@ -9,6 +9,6 @@ Some things I learned while creating this:
 - better understanding of scoping in JavaScript
 - how to work with local storage
 - how to work with storing circular structures (in progress)
-- continuing to improve my appraoch to solving errors and fixing bugs
+- continuing to improve my approach to solving errors and fixing bugs
 
 ![Alt text](PlacesList.jpg)
