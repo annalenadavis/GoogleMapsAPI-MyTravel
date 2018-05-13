@@ -103,10 +103,14 @@
               }));
               markers.push(marker);
               localMarkers.push(marker.title);
+              console.log(marker.position);
+              //lat.scopes.closure witihn the object has the lat/lng
+              console.log(markers);
 
               //Add places to list in browser window & to local storage
               populateList(localMarkers, placeList);
               localStorage.setItem('localMarkers', JSON.stringify(localMarkers));
+              // localStorage.setItem('markers', JSON.stringify(markers));
 
               // Add Info Windows
               const content = marker.title;
@@ -145,12 +149,9 @@
           populateList(localMarkers, placeList); //update the list in broswer on page load
           
           //save data to local storage to reload markers
-          map.data.toGeoJson(function (json) {
-            localStorage.setItem('geoData', JSON.stringify(json));
-          });
-          //TODO: Render map with geoData saved to localstorage when page reloads.
-          //geoData doesn't appear to be in a format I can use to add markers again
-          //can't just use markers because it is a circular structure...
+          //markers array is a circular structure so can't stringify it
+          //turn localmarkers array into an array of objects that includes name, lat, and lng for each place
+          //lat.scopes.closure within each marker object has the lat/lng
 
       } //end initMap function
 
