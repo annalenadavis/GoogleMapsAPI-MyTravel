@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8">
-    <!--TODO: style map and list -->
+    <!--TODO: style infoWindows and place list (limit length of list?)-->
     <link rel="stylesheet" href="style.css">
   </head>
 
@@ -31,6 +31,8 @@
       let map;
       const pushpin = "redcircle.png";
       let localMarkers = JSON.parse(localStorage.getItem('localMarkers')) || [];
+      let activeWindow;
+      let infoWindow;
 
       function initMap() {
 
@@ -38,15 +40,192 @@
 
           //Create the Map
           map = new google.maps.Map(document.getElementById('map'), {
-            zoom: 2,
+            zoom: 3,
             center: new google.maps.LatLng(27.77, 50.95),
-            mapTypeId: 'hybrid'
+            styles: [
+                      {
+                        "elementType": "geometry",
+                        "stylers": [
+                          {
+                            "color": "#f5f5f5"
+                          }
+                        ]
+                      },
+                      {
+                        "elementType": "labels.icon",
+                        "stylers": [
+                          {
+                            "visibility": "off"
+                          }
+                        ]
+                      },
+                      {
+                        "elementType": "labels.text.fill",
+                        "stylers": [
+                          {
+                            "color": "#616161"
+                          }
+                        ]
+                      },
+                      {
+                        "elementType": "labels.text.stroke",
+                        "stylers": [
+                          {
+                            "color": "#f5f5f5"
+                          }
+                        ]
+                      },
+                      {
+                        "featureType": "administrative.land_parcel",
+                        "elementType": "labels",
+                        "stylers": [
+                          {
+                            "visibility": "off"
+                          }
+                        ]
+                      },
+                      {
+                        "featureType": "administrative.land_parcel",
+                        "elementType": "labels.text.fill",
+                        "stylers": [
+                          {
+                            "color": "#bdbdbd"
+                          }
+                        ]
+                      },
+                      {
+                        "featureType": "poi",
+                        "elementType": "geometry",
+                        "stylers": [
+                          {
+                            "color": "#eeeeee"
+                          }
+                        ]
+                      },
+                      {
+                        "featureType": "poi",
+                        "elementType": "labels.text.fill",
+                        "stylers": [
+                          {
+                            "color": "#757575"
+                          }
+                        ]
+                      },
+                      {
+                        "featureType": "poi.park",
+                        "elementType": "geometry",
+                        "stylers": [
+                          {
+                            "color": "#e5e5e5"
+                          }
+                        ]
+                      },
+                      {
+                        "featureType": "poi.park",
+                        "elementType": "labels.text.fill",
+                        "stylers": [
+                          {
+                            "color": "#9e9e9e"
+                          }
+                        ]
+                      },
+                      {
+                        "featureType": "road",
+                        "elementType": "geometry",
+                        "stylers": [
+                          {
+                            "color": "#ffffff"
+                          }
+                        ]
+                      },
+                      {
+                        "featureType": "road.arterial",
+                        "elementType": "labels.text.fill",
+                        "stylers": [
+                          {
+                            "color": "#757575"
+                          }
+                        ]
+                      },
+                      {
+                        "featureType": "road.highway",
+                        "elementType": "geometry",
+                        "stylers": [
+                          {
+                            "color": "#dadada"
+                          }
+                        ]
+                      },
+                      {
+                        "featureType": "road.highway",
+                        "elementType": "labels.text.fill",
+                        "stylers": [
+                          {
+                            "color": "#616161"
+                          }
+                        ]
+                      },
+                      {
+                        "featureType": "road.local",
+                        "elementType": "labels",
+                        "stylers": [
+                          {
+                            "visibility": "off"
+                          }
+                        ]
+                      },
+                      {
+                        "featureType": "road.local",
+                        "elementType": "labels.text.fill",
+                        "stylers": [
+                          {
+                            "color": "#9e9e9e"
+                          }
+                        ]
+                      },
+                      {
+                        "featureType": "transit.line",
+                        "elementType": "geometry",
+                        "stylers": [
+                          {
+                            "color": "#e5e5e5"
+                          }
+                        ]
+                      },
+                      {
+                        "featureType": "transit.station",
+                        "elementType": "geometry",
+                        "stylers": [
+                          {
+                            "color": "#eeeeee"
+                          }
+                        ]
+                      },
+                      {
+                        "featureType": "water",
+                        "elementType": "geometry",
+                        "stylers": [
+                          {
+                            "color": "#c9c9c9"
+                          }
+                        ]
+                      },
+                      {
+                        "featureType": "water",
+                        "elementType": "labels.text.fill",
+                        "stylers": [
+                          {
+                            "color": "#9e9e9e"
+                          }
+                        ]
+                      }
+                    ]
           });
 
           //Icon properties
           const icon = {
             url: pushpin,
-            size: new google.maps.Size(71, 71),
+            size: new google.maps.Size(33, 33),
             origin: new google.maps.Point(0, 0),
             anchor: new google.maps.Point(17, 34),
             scaledSize: new google.maps.Size(25, 25)
@@ -65,7 +244,6 @@
 
 //ADD MARKERS & INFOWINDOWS VIA SEARCHBOX
           const markers = [];
-          let activeWindow;
           const addPlacesForm = document.querySelector('.add-places');
           const placeList = document.querySelector('.place-list');
 
@@ -101,6 +279,8 @@
                 position: place.geometry.location
               }));
               markers.push(marker);
+              //add to another array that will be stored in local storage because
+              //the markers array is a circular structure and can't be stringifed to JSON
               localMarkers.push({title: marker.title, position: marker.position});
 
               //Add places to list in browser window & to local storage
@@ -109,7 +289,7 @@
 
               // Add Info Windows
               const content = marker.title;
-              const infoWindow = new google.maps.InfoWindow();
+              infoWindow = new google.maps.InfoWindow();
             
               //InfoWindow opens on marker click       
               marker.addListener('click', function(){
@@ -124,8 +304,8 @@
             map.fitBounds(bounds); //adjust map boundaries after adding marker
           }); //end searchbox listener        
 
-          function addPlace(e) {
-            e.preventDefault(); //Stop page from reloading after entering place
+          function submitForm(e) {
+            e.preventDefault(); //Stop page from reloading after entering place into form
             this.reset(); //clears last search from input
           } 
 
@@ -140,18 +320,21 @@
             }).join('');
           } 
 
-          addPlacesForm.addEventListener('submit', addPlace); //Listen for submit event on form
+          addPlacesForm.addEventListener('submit', submitForm); //Listen for submit event on form
           populateList(localMarkers, placeList); //update the list in broswer on page load
 
+          let newMarker;
           //Add markers from local storage to map
-          for (var i = 0; i < localMarkers.length; i++) {
-            marker = new google.maps.Marker({
+          for (let i = 0; i < localMarkers.length; i++) {
+            newMarker = new google.maps.Marker({
               map: map,
               icon: icon,
               title: localMarkers[i].title,
               position: localMarkers[i].position
             });
           }
+
+          //TODO: InfoWindows don't open for newMarkers added from saved array. 
 
       } //end initMap function
 
