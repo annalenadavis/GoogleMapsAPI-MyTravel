@@ -2,7 +2,6 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8">
-    <!--TODO: style infoWindows and place list (limit length of list?)-->
     <link rel="stylesheet" href="style.css">
   </head>
 
@@ -19,11 +18,9 @@
       <form class="add-places">
         <input id="pac-input" type="text" name="place" placeholder="Place Name" required>
         <input type="submit" value="+ Add Place">
-        <!-- TODO: Add button to remove all markers/list and JS to do it -->
-        <!-- <button type="button" placeholder="Remove all places"></button> -->
+        <button type="button" id="removeMarkers" placeholder="Remove all places">Remove All Places</button>
       </form>
     </div>
-
     <script type='text/javascript' src='config.js'></script>
     <script>
       const mykey = config.MY_KEY;
@@ -38,7 +35,7 @@
 
 // SET MAP
 
-          //Create the Map
+          //Create and Stylize the Map
           map = new google.maps.Map(document.getElementById('map'), {
             zoom: 3,
             center: new google.maps.LatLng(27.77, 50.95),
@@ -243,7 +240,7 @@
           });
 
 //ADD MARKERS & INFOWINDOWS VIA SEARCHBOX
-          const markers = [];
+          let markers = [];
           const addPlacesForm = document.querySelector('.add-places');
           const placeList = document.querySelector('.place-list');
 
@@ -279,68 +276,63 @@
                 position: place.geometry.location
               }));
               markers.push(marker);
-              //add to another array that will be stored in local storage because
-              //the markers array is a circular structure and can't be stringifed to JSON
-              localMarkers.push({title: marker.title, position: marker.position});
 
               //Add places to list in browser window & to local storage
-              populateList(localMarkers, placeList);
-              localStorage.setItem('localMarkers', JSON.stringify(localMarkers));
+              populateList(markers, placeList);
 
               // Add Info Windows
               const content = marker.title;
-              infoWindow = new google.maps.InfoWindow();
-            
+              const position = marker.position;
+              infoWindow = new google.maps.InfoWindow({
+              });
               //InfoWindow opens on marker click       
               marker.addListener('click', function(){
                 if(activeWindow && (activeWindow !== null)) activeWindow.close();
-                    infoWindow.setContent(content);
-                    infoWindow.open(map, marker);
-                    activeWindow = infoWindow;
+                infoWindow.open(map, marker);
+                infoWindow.setContent(content);
+                infoWindow.setPosition(position);
+                activeWindow = infoWindow;
               }); //end InfoWindow function
 
-            });//end places function
+              // remove all markers from map
+              const removeButton = document.getElementById("removeMarkers");    
+              function removeMapMarkers(){
+                for(i=0; i<markers.length; i++){
+                  markers[i].setMap(null);
+                }
+                markers = [];
+                populateList(markers, placeList);
+              }
+              removeButton.addEventListener('click', removeMapMarkers);
+
+            });//====================END PLACES FUNCTION================================
 
             map.fitBounds(bounds); //adjust map boundaries after adding marker
-          }); //end searchbox listener        
+          }); //====================END SEARCH BOX LISTENER================================        
 
           function submitForm(e) {
             e.preventDefault(); //Stop page from reloading after entering place into form
             this.reset(); //clears last search from input
           } 
 
-          //Update the List in the browser
+          //Function used to update the list in the browser
           function populateList(array = [], arrayList) {
             arrayList.innerHTML = array.map((marker, i) => {
               return `
                   <li>
-                    <label for="">${localMarkers[i].title}</label>
+                    <label for="">${markers[i].title}</label>
                   </li>
                 `;  
             }).join('');
           } 
 
           addPlacesForm.addEventListener('submit', submitForm); //Listen for submit event on form
-          populateList(localMarkers, placeList); //update the list in broswer on page load
 
-          let newMarker;
-          //Add markers from local storage to map
-          for (let i = 0; i < localMarkers.length; i++) {
-            newMarker = new google.maps.Marker({
-              map: map,
-              icon: icon,
-              title: localMarkers[i].title,
-              position: localMarkers[i].position
-            });
-          }
-
-          //TODO: InfoWindows don't open for newMarkers added from saved array. 
-
-      } //end initMap function
+      } //====================END INITMAP FUNCTION================================
 
       
 
     </script>
-    <script async defer src="https://maps.googleapis.com/maps/api/js?&callback=initMap&libraries=places&key=" + mykey></script>
+    <script async defer src="https://maps.googleapis.com/maps/api/js?&callback=initMap&libraries=places&key=AIzaSyA4GHFOFyAxrM7vzvj1qGxVvGxBryUngGg"></script>
   </body>
 </html>

@@ -115,11 +115,19 @@
   }
   .add-places {
     margin-top: 20px;
+    text-align: center;
   }
 
   .add-places input {
     padding:10px;
     outline:0;
     border:1px solid rgba(0,0,0,0.1);
+    background-color: lightgoldenrodyellow;
   }
 
+  .add-places button {
+    outline:0;
+    padding: 5px;
+    border:1px solid rgba(0,0,0,0.1);
+    margin: 20px 0 0;
+  }
